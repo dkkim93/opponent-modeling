@@ -106,3 +106,4 @@ venv.bak/
 # folder
 logs/
 thirdparty/
+pytorch_models/
