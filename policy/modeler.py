@@ -1,13 +1,13 @@
 import torch
 import numpy as np
-from policy.td3 import TD3
+from policy.normal_mlp import NormalMLP
 from misc.replay_buffer import ReplayBuffer
 from collections import OrderedDict
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 
-class Opponent(object):
+class Modeler(object):
     def __init__(self, env, log, args, name, i_agent):
         self.env = env
         self.log = log
@@ -18,33 +18,28 @@ class Opponent(object):
         self.set_dim()
         self.set_policy()
 
-        assert "opponent" in self.name
+        assert "modeler" in self.name
 
     def set_dim(self):
         self.actor_input_dim = self.env.observation_space[0].shape[0]
         self.actor_output_dim = self.env.action_space[0].shape[0] 
-        self.critic_input_dim = (self.actor_input_dim + self.actor_output_dim)
         self.max_action = float(self.env.action_space[0].high[0])
 
         self.log[self.args.log_name].info("[{0}] Actor input dim: {1}".format(
             self.name, self.actor_input_dim))
         self.log[self.args.log_name].info("[{0}] Actor output dim: {1}".format(
             self.name, self.actor_output_dim))
-        self.log[self.args.log_name].info("[{0}] Critic input dim: {1}".format(
-            self.name, self.critic_input_dim))
         self.log[self.args.log_name].info("[{0}] Max action: {1}".format(
             self.name, self.max_action))
 
     def set_policy(self):
-        self.policy = TD3(
+        self.policy = NormalMLP(
             actor_input_dim=self.actor_input_dim,
             actor_output_dim=self.actor_output_dim,
-            critic_input_dim=self.critic_input_dim,
             n_hidden=self.args.opponent_n_hidden,
             max_action=self.max_action,
-            name=self.name,
-            args=self.args,
-            i_agent=self.i_agent)
+            name=self.name + "_actor",
+            args=self.args)
 
         self.memory = ReplayBuffer()
 
@@ -63,27 +58,22 @@ class Opponent(object):
         return action
 
     def select_deterministic_action(self, obs):
-        action = self.policy.select_action(obs)
-        assert not np.isnan(action).any()
+        mu, std = self.policy.select_action(obs)
+        assert not np.isnan(mu).any()
+        assert not np.isnan(std).any()
 
-        return action
+        return mu
 
-    def add_memory(self, obs, new_obs, action, reward, done):
-        self.memory.add((obs, new_obs, action, reward, done))
+    def add_memory(self, obs, action):
+        self.memory.add((obs, action))
 
     def clear_memory(self):
         self.memory.clear()
 
-    def update_policy(self, opponent_n, total_timesteps):
+    def update_policy(self, total_timesteps):
         debug = self.policy.train(
             replay_buffer=self.memory,
-            iterations=self.args.ep_max_timesteps,
-            batch_size=self.args.batch_size, 
-            discount=self.args.discount, 
-            tau=self.args.tau, 
-            policy_noise=self.args.policy_noise, 
-            noise_clip=self.args.noise_clip,
-            policy_freq=self.args.policy_freq)
+            batch_size=self.args.batch_size)
 
         return debug
 

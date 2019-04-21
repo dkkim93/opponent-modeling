@@ -41,3 +41,14 @@ class ReplayBuffer(object):
             d.append(np.array(D, copy=False))
 
         return np.array(x), np.array(y), np.array(u), np.array(r).reshape(-1, 1), np.array(d).reshape(-1, 1)
+
+    def sample_for_modeler(self, batch_size):
+        ind = np.random.randint(0, len(self.storage), size=batch_size)
+        items = [[] for _ in range(len(self.storage[0]))]
+
+        for i in ind: 
+            experience = self.storage[i]
+            for i_item, item in enumerate(experience):
+                items[i_item].append(np.array(item, copy=False))
+
+        return [np.array(item) for item in items]

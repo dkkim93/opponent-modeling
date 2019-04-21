@@ -1,12 +1,12 @@
 import copy
 import numpy as np
-from misc.train_utils import *
+# from misc.train_utils import *
 
 total_timesteps = 0
 total_eps = 0
 
 
-def eval_progress(opponent_n, env, log, tb_writer, args, log_result):
+def eval_progress(modeler, env, log, tb_writer, args, log_result):
     if total_eps % 3 == 0:
         eval_reward = 0.
         n_eval = 10
@@ -20,13 +20,10 @@ def eval_progress(opponent_n, env, log, tb_writer, args, log_result):
                 if total_eps % 100 == 0:
                     env.render()
 
-                opponent_obs_n = env_obs_n
-                opponent_action_n = []
-                for opponent, opponent_obs in zip(opponent_n, opponent_obs_n):
-                    opponent_action = opponent.select_deterministic_action(np.array(opponent_obs))
-                    opponent_action_n.append(opponent_action)
+                modeler_obs_n = env_obs_n
+                modeler_action = modeler.select_deterministic_action(np.array(modeler_obs_n[0]))
 
-                new_env_obs_n, reward_n, done_n, _ = env.step(copy.deepcopy(opponent_action_n))
+                new_env_obs_n, reward_n, done_n, _ = env.step(copy.deepcopy([modeler_action]))
                 terminal = True if ep_timesteps + 1 == args.ep_max_timesteps else False
 
                 # For next timestep
@@ -43,7 +40,7 @@ def eval_progress(opponent_n, env, log, tb_writer, args, log_result):
         tb_writer.add_scalar("reward/eval_reward", eval_reward, total_eps)
 
 
-def collect_one_traj(opponent_n, env, log, args, tb_writer):
+def collect_one_traj(modeler, opponent_n, env, log, args, tb_writer):
     global total_timesteps, total_eps
 
     ep_reward = 0.
@@ -55,25 +52,17 @@ def collect_one_traj(opponent_n, env, log, args, tb_writer):
         opponent_obs_n = env_obs_n
         opponent_action_n = []
         for opponent, opponent_obs in zip(opponent_n, opponent_obs_n):
-            opponent_action = opponent.select_stochastic_action(
-                obs=np.array(opponent_obs), total_timesteps=total_timesteps)
+            opponent_action = opponent.select_deterministic_action(obs=np.array(opponent_obs))
             opponent_action_n.append(opponent_action)
 
         # Perform action
         new_env_obs_n, env_reward_n, env_done_n, _ = env.step(copy.deepcopy(opponent_action_n))
         terminal = True if ep_timesteps + 1 == args.ep_max_timesteps else False
 
-        # Add opponent memory
-        new_opponent_obs_n = new_env_obs_n
-        opponent_reward_n = env_reward_n
-
-        for i_opponent, opponent in enumerate(opponent_n):
-            opponent.add_memory(
-                obs=opponent_obs_n[i_opponent],
-                new_obs=new_opponent_obs_n[i_opponent],
-                action=opponent_action_n[i_opponent],
-                reward=opponent_reward_n[i_opponent],
-                done=False)
+        # Add to modeler memory
+        modeler.add_memory(
+            obs=opponent_obs_n[0],
+            action=opponent_action_n[0])
 
         # For next timestep
         env_obs_n = new_env_obs_n
@@ -83,24 +72,19 @@ def collect_one_traj(opponent_n, env, log, args, tb_writer):
 
         if terminal: 
             total_eps += 1
-            log[args.log_name].info("Train episode reward {} at episode {}".format(ep_reward, total_eps))
-            tb_writer.add_scalar("reward/train_ep_reward", ep_reward, total_eps)
-
+            
             return ep_reward
 
 
-def train(opponent_n, env, log, tb_writer, args):
+def train_modeler(modeler, opponent_n, env, log, tb_writer, args):
     while True:
         eval_progress(
-            opponent_n=opponent_n, env=env, log=log,
+            modeler, env=env, log=log,
             tb_writer=tb_writer, args=args, log_result=True)
 
         collect_one_traj(
-            opponent_n=opponent_n, env=env, log=log,
-            args=args, tb_writer=tb_writer)
+            modeler=modeler, opponent_n=opponent_n, env=env, 
+            log=log, args=args, tb_writer=tb_writer)
 
-        for opponent in opponent_n:
-            opponent.update_policy(opponent_n, total_timesteps)
-
-        if total_eps % 500 == 0:
-            save(opponent_n, total_eps)
+        debug = modeler.update_policy(total_timesteps)
+        tb_writer.add_scalar("loss/modeler_loss", debug["actor_loss"], total_timesteps)

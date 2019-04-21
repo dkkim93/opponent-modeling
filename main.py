@@ -4,13 +4,17 @@ import os
 import numpy as np
 from misc.utils import set_log, make_env
 from tensorboardX import SummaryWriter
-from trainer.train import train
+from trainer.train_opponent import train_opponent
+from trainer.train_modeler import train_modeler
 
 
 def set_policy(env, tb_writer, log, args, name, i_agent):
     if name == "opponent":
         from policy.opponent import Opponent
         policy = Opponent(env=env, log=log, name=name, args=args, i_agent=i_agent)
+    elif name == "modeler":
+        from policy.modeler import Modeler
+        policy = Modeler(env=env, log=log, name=name, args=args, i_agent=i_agent)
     else:
         raise ValueError("Invalid name")
 
@@ -41,13 +45,21 @@ def main(args):
         set_policy(env, tb_writer, log, args, name="opponent", i_agent=i_agent)
         for i_agent in range(1)]
 
-    # Start train
-    train(
-        opponent_n=opponent_n, 
-        env=env, 
-        log=log,
-        tb_writer=tb_writer,
-        args=args)
+    modeler = set_policy(env, tb_writer, log, args, name="modeler", i_agent=0)
+
+    # Start training
+    if args.train_opponent:
+        train_opponent(
+            opponent_n=opponent_n, env=env, 
+            log=log, tb_writer=tb_writer, args=args)
+    else:
+        # Load trained opponent model
+        for opponent in opponent_n:
+            opponent.load_model(filename="opponent0_500", directory="./pytorch_models")
+
+        train_modeler(
+            modeler=modeler, opponent_n=opponent_n, 
+            env=env, log=log, tb_writer=tb_writer, args=args)
 
 
 if __name__ == "__main__":
@@ -92,6 +104,9 @@ if __name__ == "__main__":
     parser.add_argument(
         "--opponent-n-hidden", default=400, type=int,
         help="Number of hidden units")
+    parser.add_argument(
+        "--train-opponent", action="store_true", 
+        help="Whether or not models are saved")
 
     # Env
     parser.add_argument(
@@ -108,9 +123,6 @@ if __name__ == "__main__":
     parser.add_argument(
         "--prefix", default="", type=str,
         help="Prefix for tb_writer and logging")
-    parser.add_argument(
-        "--save-models", action="store_true", 
-        help="Whether or not models are saved")
 
     args = parser.parse_args()
 

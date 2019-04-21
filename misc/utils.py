@@ -1,6 +1,9 @@
+import math
+import torch
 import logging
 import git
 import multiagent.scenarios as scenarios
+import numpy as np
 from multiagent.environment import MultiAgentEnv
 
 
@@ -67,3 +70,13 @@ def make_env(args):
 def normalize(value, min_value, max_value):
     assert min_value < max_value
     return 2. * (value - min_value) / float(max_value - min_value) - 1.
+
+
+def normal_dist(x, mu, sigma, device):
+    pi = np.array([math.pi])
+    pi = torch.from_numpy(pi).float().to(device)
+
+    a = (-1 * (x - mu).pow(2) / (2 * sigma)).exp()
+    b = 1 / (2 * sigma * pi.expand_as(sigma)).sqrt()
+
+    return a * b

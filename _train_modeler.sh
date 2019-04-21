@@ -35,5 +35,4 @@ python3.6 main.py \
 --start-timesteps 2000 \
 --ep-max-timesteps 100 \
 --seed 0 \
---train-opponent \
 --prefix ""
