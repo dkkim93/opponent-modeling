@@ -37,11 +37,13 @@ def main(args):
     np.random.seed(args.seed)
 
     # Initialize policy
-    opponent = set_policy(env, tb_writer, log, args, name="opponent", i_agent=0)
+    opponent_n = [
+        set_policy(env, tb_writer, log, args, name="opponent", i_agent=i_agent)
+        for i_agent in range(1)]
 
     # Start train
     train(
-        opponent=opponent, 
+        opponent_n=opponent_n, 
         env=env, 
         log=log,
         tb_writer=tb_writer,

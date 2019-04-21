@@ -59,6 +59,8 @@ def make_env(args):
         observation_callback=scenario.observation,
         done_callback=done_callback)
 
+    assert env.discrete_action_space is False, "For cont. action, this flag must be False"
+
     return env
 
 

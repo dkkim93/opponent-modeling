@@ -75,22 +75,15 @@ class Opponent(object):
         self.memory.clear()
 
     def update_policy(self, opponent_n, total_timesteps):
-        if total_timesteps % 2 == 0:
-            policy_update = True
-        else:
-            policy_update = False
-
-        raise ValueError("no centralized!")
-        debug = self.policy.centralized_task_level_train(
-            agent_n=opponent_n,
+        debug = self.policy.train(
             replay_buffer=self.memory,
-            iterations=1,
+            iterations=self.args.ep_max_timesteps,
             batch_size=self.args.batch_size, 
             discount=self.args.discount, 
             tau=self.args.tau, 
             policy_noise=self.args.policy_noise, 
-            noise_clip=self.args.noise_clip, 
-            policy_update=policy_update)
+            noise_clip=self.args.noise_clip,
+            policy_freq=self.args.policy_freq)
 
         return debug
 
