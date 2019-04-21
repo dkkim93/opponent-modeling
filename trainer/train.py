@@ -1,6 +1,6 @@
 import copy
 import numpy as np
-# from misc.train_utils import *
+from misc.train_utils import *
 
 total_timesteps = 0
 total_eps = 0
@@ -17,6 +17,9 @@ def eval_progress(opponent_n, env, log, tb_writer, args, log_result):
             terminal = False
 
             while True:
+                if total_eps % 100 == 0:
+                    env.render()
+
                 opponent_obs_n = env_obs_n
                 opponent_action_n = []
                 for opponent, opponent_obs in zip(opponent_n, opponent_obs_n):
@@ -98,3 +101,6 @@ def train(opponent_n, env, log, tb_writer, args):
 
         for opponent in opponent_n:
             opponent.update_policy(opponent_n, total_timesteps)
+
+        if total_eps % 500 == 0:
+            save(opponent_n, total_eps)

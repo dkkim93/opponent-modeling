@@ -200,3 +200,10 @@ def get_teacher_reward(student_n, new_student_obs_n, advising_happend, log, tb_w
     tb_writer.add_scalar("reward/Teacher_Reward", teacher_reward_n, total_step_count)
 
     return teacher_reward_n
+
+
+def save(agent_n, total_eps):
+    for agent in agent_n:
+        agent.save_weight(
+            filename=agent.name + "_" + str(total_eps),
+            directory="./pytorch_models")

@@ -21,7 +21,7 @@ def main(args):
     # Create dir
     if not os.path.exists("./logs"):
         os.makedirs("./logs")
-    if args.save_models and not os.path.exists("./pytorch_models"):
+    if not os.path.exists("./pytorch_models"):
         os.makedirs("./pytorch_models")
 
     # Set logs
