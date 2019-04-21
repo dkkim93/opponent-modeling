@@ -105,3 +105,4 @@ venv.bak/
 
 # folder
 logs/
+thirdparty/
