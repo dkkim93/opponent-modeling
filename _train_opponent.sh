@@ -10,7 +10,7 @@ DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
 # Tensorboard
 pkill tensorboard
- #rm -rf logs/tb*
+rm -rf logs/tb*
 tensorboard --logdir logs/ &
 
 # Virtualenv
@@ -31,18 +31,8 @@ export CUDA_VISIBLE_DEVICES=-1
 
 # Experiment 1
 python3.6 main.py \
---env-name "complex_push_two" \
---tau 0.01 \
---ep-max-timesteps 100 \
+--env-name "simple" \
 --start-timesteps 2000 \
---teacher-start-timesteps 320000 \
---expl-noise 0.1 \
---batch-size 50 \
---max-timesteps 500000000 \
+--ep-max-timesteps 100 \
 --seed 0 \
---session 1800 \
---n-eval 10 \
---n-teacher 2 \
---student-done \
---load-student-memory \
 --prefix ""
