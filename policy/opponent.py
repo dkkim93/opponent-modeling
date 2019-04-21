@@ -1,13 +1,13 @@
 import torch
 import numpy as np
 from policy.td3 import TD3
-from misc.utils import ReplayBuffer
+from misc.replay_buffer import ReplayBuffer
 from collections import OrderedDict
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 
-class Student(object):
+class Opponent(object):
     def __init__(self, env, log, args, name, i_agent):
         self.env = env
         self.log = log
@@ -18,26 +18,21 @@ class Student(object):
         self.set_dim()
         self.set_policy()
 
-        self.actor_loss_n = []
-        self.critic_loss_n = []
-
-        assert "student" in self.name
+        assert "opponent" in self.name
 
     def set_dim(self):
         self.actor_input_dim = self.env.observation_space[0].shape[0]
-        if self.args.student_done:
-            self.actor_input_dim += 1
         self.actor_output_dim = self.env.action_space[0].shape[0] 
-        self.critic_input_dim = (self.actor_input_dim + self.actor_output_dim) * self.args.n_student
+        self.critic_input_dim = (self.actor_input_dim + self.actor_output_dim)
         self.max_action = float(self.env.action_space[0].high[0])
 
-        self.log[self.args.log_name].info("[{}] Actor input dim: {}".format(
+        self.log[self.args.log_name].info("[{0}] Actor input dim: {1}".format(
             self.name, self.actor_input_dim))
-        self.log[self.args.log_name].info("[{}] Actor output dim: {}".format(
+        self.log[self.args.log_name].info("[{0}] Actor output dim: {1}".format(
             self.name, self.actor_output_dim))
-        self.log[self.args.log_name].info("[{}] Critic input dim: {}".format(
+        self.log[self.args.log_name].info("[{0}] Critic input dim: {1}".format(
             self.name, self.critic_input_dim))
-        self.log[self.args.log_name].info("[{}] Max action: {}".format(
+        self.log[self.args.log_name].info("[{0}] Max action: {1}".format(
             self.name, self.max_action))
 
     def set_policy(self):
@@ -45,7 +40,7 @@ class Student(object):
             actor_input_dim=self.actor_input_dim,
             actor_output_dim=self.actor_output_dim,
             critic_input_dim=self.critic_input_dim,
-            n_hidden=self.args.student_n_hidden,
+            n_hidden=self.args.opponent_n_hidden,
             max_action=self.max_action,
             name=self.name,
             args=self.args,
@@ -79,14 +74,15 @@ class Student(object):
     def clear_memory(self):
         self.memory.clear()
 
-    def update_policy(self, student_n, total_timesteps):
+    def update_policy(self, opponent_n, total_timesteps):
         if total_timesteps % 2 == 0:
             policy_update = True
         else:
             policy_update = False
 
+        raise ValueError("no centralized!")
         debug = self.policy.centralized_task_level_train(
-            agent_n=student_n,
+            agent_n=opponent_n,
             replay_buffer=self.memory,
             iterations=1,
             batch_size=self.args.batch_size, 
