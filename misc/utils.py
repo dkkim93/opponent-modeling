@@ -2,9 +2,8 @@ import math
 import torch
 import logging
 import git
-import multiagent.scenarios as scenarios
+import gym
 import numpy as np
-from multiagent.environment import MultiAgentEnv
 
 
 def set_logger(logger_name, log_file, level=logging.INFO):
@@ -41,30 +40,30 @@ def check_github(path, branch_name):
     assert branch.name == branch_name, "Branch name does not equal the desired branch"
 
 
-def make_env(args):
-    """Load multi-agent particle environment
-    This code is modified from: https://github.com/openai/maddpg/blob/master/experiments/train.py
+def make_env(env_name):
+    """Load gym environment: ["Regression-v0"]
+    Ref: https://github.com/tristandeleu/pytorch-maml-rl/blob/master/maml_rl/sampler.py
     """
-    # Check github branch
-    check_github(
-        path="./thirdparty/multiagent-particle-envs",
-        branch_name="opponent")
+    def _make_env():
+        return gym.make(env_name)
+    return _make_env
 
-    # Load multi-agent particle env
-    scenario = scenarios.load(args.env_name + ".py").Scenario()
-    world = scenario.make_world()
-    done_callback = None
 
-    env = MultiAgentEnv(
-        world,
-        reset_callback=scenario.reset_world,
-        reward_callback=scenario.reward,
-        observation_callback=scenario.observation,
-        done_callback=done_callback)
+def set_policy(sampler, log, tb_writer, args, name, policy_id):
+    if args.policy_type == "discrete":
+        raise NotImplementedError("")
 
-    assert env.discrete_action_space is False, "For cont. action, this flag must be False"
+    elif args.policy_type == "continuous":
+        from policy.continuous_policy import ContinuousPolicy
+        policy = ContinuousPolicy(sampler, log, tb_writer, args, name, policy_id)
 
-    return env
+    elif args.policy_type == "normal":
+        raise NotImplementedError("")
+
+    else:
+        raise ValueError("Invalid option")
+
+    return policy
 
 
 def normalize(value, min_value, max_value):

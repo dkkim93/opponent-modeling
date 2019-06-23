@@ -7,7 +7,7 @@ from collections import OrderedDict
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 
-class Modeler(object):
+class MetaLearner(object):
     def __init__(self, env, log, args, name, i_agent):
         self.env = env
         self.log = log

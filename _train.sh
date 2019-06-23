@@ -31,8 +31,9 @@ export CUDA_VISIBLE_DEVICES=-1
 
 # Experiment 1
 python3.6 main.py \
---env-name "simple" \
---start-timesteps 2000 \
---ep-max-timesteps 100 \
+--env-name "Regression-v0" \
 --seed 0 \
+--ep-max-timesteps 1000 \
+--n-traj 1 \
+--policy-type "continuous" \
 --prefix ""

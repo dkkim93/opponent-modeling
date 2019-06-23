@@ -2,11 +2,11 @@ import numpy as np
 
 
 class ReplayBuffer(object):
-    """Simple replay buffer
-    Modified from Ref: https://github.com/openai/baselines/blob/master/baselines/deepq/replay_buffer.py
+    """Replay buffer
+    Ref: https://github.com/openai/baselines/blob/master/baselines/deepq/replay_buffer.py
     """
     def __init__(self):
-        self.storage = []
+        self.storage = {}
 
     def __len__(self):
         return len(self.storage)
@@ -15,32 +15,21 @@ class ReplayBuffer(object):
         self.storage.clear()
         assert len(self.storage) == 0
 
-    def sync(self, memory):
-        self.clear()
-        for exp in memory.storage:
-            self.storage.append(exp)
+    def add(self, task_id, episode):
+        self.storage[task_id] = episode
 
-        assert len(memory) == len(self.storage)
+    def sample(self, batch_size):
+        task_id = np.random.randint(0, len(self.storage) - 1, size=1)[0]
+        return (self.storage[task_id], self.storage[task_id + 1])
 
-    def add(self, data):
-        # Expects tuples of (state, next_state, action, reward, done)
-        if len(self.storage) > 1e6:
-            self.storage.pop(0)
-        self.storage.append(data)
+    # def sample(self, batch_size):
+    #     task_id = np.random.randint(0, len(self.storage) - 1, size=batch_size)
 
-    def sample(self, batch_size=100):
-        ind = np.random.randint(0, len(self.storage), size=batch_size)
-        x, y, u, r, d = [], [], [], [], []
+    #     sampled_tasks = []
+    #     for i in task_id: 
+    #         sampled_tasks.append((self.storage[i], self.storage[i + 1]))
 
-        for i in ind: 
-            X, Y, U, R, D = self.storage[i]
-            x.append(np.array(X, copy=False))
-            y.append(np.array(Y, copy=False))
-            u.append(np.array(U, copy=False))
-            r.append(np.array(R, copy=False))
-            d.append(np.array(D, copy=False))
-
-        return np.array(x), np.array(y), np.array(u), np.array(r).reshape(-1, 1), np.array(d).reshape(-1, 1)
+    #     return sampled_tasks
 
     def sample_for_modeler(self, batch_size):
         ind = np.random.randint(0, len(self.storage), size=batch_size)
