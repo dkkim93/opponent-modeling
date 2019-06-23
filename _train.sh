@@ -26,14 +26,15 @@ export PYTHONPATH=$DIR/thirdparty/multiagent-particle-envs:$PYTHONPATH
 print_header "Training network"
 cd $DIR
 
-# Comment for using GPU
-export CUDA_VISIBLE_DEVICES=-1
+# # Comment for using GPU
+# export CUDA_VISIBLE_DEVICES=-1
 
 # Experiment 1
 python3.6 main.py \
 --env-name "Regression-v0" \
 --seed 0 \
---ep-max-timesteps 1000 \
+--ep-max-timesteps 500 \
 --n-traj 1 \
+--meta-lr 0.01 \
 --policy-type "continuous" \
 --prefix ""

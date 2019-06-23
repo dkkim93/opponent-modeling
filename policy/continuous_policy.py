@@ -14,6 +14,7 @@ class ContinuousPolicy(PolicyBase):
             name=name, policy_id=policy_id)
 
         self.set_policy()
+        self.norm_coeff = float(self.sampler.envs.observation_space.high[0])
         self.optimizer = torch.optim.Adam(self.parameters(), lr=self.args.meta_lr)
 
     def set_policy(self):
@@ -23,6 +24,7 @@ class ContinuousPolicy(PolicyBase):
         setattr(self, self.name + "_l1", nn.Linear(input_dim, self.args.n_hidden))
         setattr(self, self.name + "_l2", nn.Linear(self.args.n_hidden, self.args.n_hidden))
         setattr(self, self.name + "_l3", nn.Linear(self.args.n_hidden, output_dim))
+        self.to(device)
 
         self.log[self.args.log_name].info(
             "Set {} policy for {}\n{}".format(self.args.policy_type, self.name, self))

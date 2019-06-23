@@ -38,13 +38,11 @@ class BatchSampler(object):
             episode.append(observations, actions, rewards, batch_ids)
             observations, batch_ids = new_observations, new_batch_ids
 
+        episode.check_length()
+
         return episode
 
     def reset_task(self, task):
         tasks = [task for _ in range(self.num_workers)]
         reset = self.envs.reset_task(tasks)
         return all(reset)
-
-    # def sample_tasks(self, num_tasks):
-    #     tasks = self._env.unwrapped.sample_tasks(num_tasks)
-    #     return tasks

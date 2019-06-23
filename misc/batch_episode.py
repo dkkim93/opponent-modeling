@@ -100,3 +100,11 @@ class BatchEpisode(object):
 
     def __len__(self):
         return max(map(len, self._rewards_list))
+
+    def check_length(self):
+        observations_legnth = max(map(len, self._observations_list))
+        actions_legnth = max(map(len, self._actions_list))
+        rewards_legnth = max(map(len, self._rewards_list))
+
+        assert observations_legnth == actions_legnth, "Not same amount of data"
+        assert observations_legnth == rewards_legnth, "Not same amount of data"
