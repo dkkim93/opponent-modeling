@@ -91,7 +91,7 @@ class PolicyBase(nn.Module):
         test_loss, predictions_ = self.get_mse_loss(episodes_i_, params=adapted_params)
 
         # Visualize
-        self.visualize(episodes_i, episodes_i_, predictions_)
+        self.visualize(episodes_i, episodes_i_, predictions_, task_id)
         
         # Revert back to the original weight
         vector_to_parameters(old_params, self.parameters())
@@ -101,7 +101,7 @@ class PolicyBase(nn.Module):
         self.log[self.args.log_name].info("Task ID {} :: Test loss {:.5f}".format(task_id, test_loss_detached))
         self.tb_writer.add_scalars("loss", {"test_loss": test_loss_detached}, task_id)
 
-    def visualize(self, episodes_i, episodes_i_, predictions_):
+    def visualize(self, episodes_i, episodes_i_, predictions_, task_id):
         samples = episodes_i.observations.cpu().data.numpy()
         labels = episodes_i.rewards.cpu().data.numpy()
         samples_ = episodes_i_.observations.cpu().data.numpy()
@@ -111,4 +111,5 @@ class PolicyBase(nn.Module):
         plt.scatter(samples_, labels_, label="Label_")
         plt.scatter(samples_, predictions_.cpu().data.numpy(), label="Prediction_")
         plt.legend()
-        plt.show()
+        plt.savefig("./logs/" + str(self.args.log_name) + "_" + str(task_id) + ".png", bbox_inches="tight")
+        plt.close()

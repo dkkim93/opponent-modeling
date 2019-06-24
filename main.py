@@ -62,7 +62,7 @@ if __name__ == "__main__":
         choices=["discrete", "continuous", "normal"],
         help="Policy type available only for discrete, normal, and continuous")
     parser.add_argument(
-        "--n-hidden", default=32, type=int, 
+        "--n-hidden", default=64, type=int, 
         help="Number of hidden units")
     parser.add_argument(
         "--n-traj", default=1, type=int, 
@@ -105,7 +105,8 @@ if __name__ == "__main__":
 
     # Set log name
     args.log_name = \
-        "env::%s_seed::%s_prefix::%s_log" % (
-            args.env_name, str(args.seed), args.prefix)
+        "env::%s_seed::%s_meta_batch_size::%s_meta_lr::%s_fast_batch_size::%s_fast_lr::%s_prefix::%s_log" % (
+            args.env_name, str(args.seed), args.meta_batch_size, args.meta_lr, 
+            args.fast_batch_size, args.fast_lr, args.prefix)
 
     main(args=args)

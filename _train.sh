@@ -10,7 +10,7 @@ DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
 # Tensorboard
 pkill tensorboard
-rm -rf logs/tb*
+# rm -rf logs/tb*
 tensorboard --logdir logs/ &
 
 # Virtualenv
@@ -36,5 +36,9 @@ python3.6 main.py \
 --ep-max-timesteps 500 \
 --n-traj 1 \
 --meta-lr 0.01 \
+--meta-batch-size 40 \
+--fast-batch-size 5 \
+--meta-lr 0.01 \
+--fast-lr 5 \
 --policy-type "continuous" \
 --prefix ""
