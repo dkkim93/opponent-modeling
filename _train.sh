@@ -36,9 +36,9 @@ python3.6 main.py \
 --ep-max-timesteps 500 \
 --n-traj 1 \
 --meta-lr 0.01 \
---meta-batch-size 40 \
+--meta-batch-size 20 \
 --fast-batch-size 5 \
---meta-lr 0.01 \
+--meta-lr 0.003 \
 --fast-lr 5 \
 --policy-type "continuous" \
 --prefix ""

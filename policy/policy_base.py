@@ -15,7 +15,7 @@ class PolicyBase(nn.Module):
         self.args = args
         self.name = name + str(policy_id)
         self.policy_id = policy_id
-        self.memory = ReplayBuffer()
+        self.memory = ReplayBuffer(args)
 
     def update_params(self, loss, first_order):
         """Apply one step of gradient descent on the loss function `loss`, with 
