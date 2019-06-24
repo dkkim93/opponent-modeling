@@ -22,6 +22,7 @@ The script will start the virtual environment, install remaining Python dependen
 ```
 
 ## To-Dos
-- [ ] Make signal domain
-- [ ] Meta-learning method
-- [ ] No meta-learning baseline
+- [x] Make regression domain
+- [x] Meta-learning method
+- [x] No meta-learning baseline
+- [ ] Experiments with multi regression domain
