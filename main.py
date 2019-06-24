@@ -2,12 +2,12 @@ import torch
 import argparse
 import os
 import numpy as np
-from misc.utils import set_log, set_policy
+from misc.utils import set_log, set_policy, set_learner
 from tensorboardX import SummaryWriter
 from misc.batch_sampler import BatchSampler
 
 
-def train(sampler, meta_policy, log, tb_writer, args):
+def train(sampler, learner, log, tb_writer, args):
     task_id = 0
 
     while True:
@@ -16,13 +16,13 @@ def train(sampler, meta_policy, log, tb_writer, args):
         episodes = sampler.sample()
 
         # Test adaptation performance
-        meta_policy.meta_test(task_id, episodes)
+        learner.test(task_id, episodes)
 
         # Add to memory
-        meta_policy.add_episodes(task_id, episodes)
+        learner.add_episodes(task_id, episodes)
     
         # Train meta-parameter
-        meta_policy.meta_train(task_id)
+        learner.train(task_id)
     
         # Move to next task
         task_id += 1
@@ -45,11 +45,12 @@ def main(args):
 
     # Prepare for training
     sampler = BatchSampler(args)
-    meta_policy = set_policy(sampler, log, tb_writer, args, name="meta_policy", policy_id=0)
+    policy = set_policy(sampler, log, tb_writer, args, policy_id=0)
+    learner = set_learner(policy, sampler, log, tb_writer, args, learner_id=0)
 
     # Start training
     train(
-        sampler=sampler, meta_policy=meta_policy, 
+        sampler=sampler, learner=learner, 
         log=log, tb_writer=tb_writer, args=args)
 
 
@@ -61,6 +62,10 @@ if __name__ == "__main__":
         "--policy-type", type=str, 
         choices=["discrete", "continuous", "normal"],
         help="Policy type available only for discrete, normal, and continuous")
+    parser.add_argument(
+        "--learner-type", type=str, 
+        choices=["meta", "finetune"],
+        help="Learner type available only for meta, finetune")
     parser.add_argument(
         "--n-hidden", default=64, type=int, 
         help="Number of hidden units")
@@ -105,8 +110,9 @@ if __name__ == "__main__":
 
     # Set log name
     args.log_name = \
-        "env::%s_seed::%s_meta_batch_size::%s_meta_lr::%s_fast_batch_size::%s_fast_lr::%s_prefix::%s_log" % (
-            args.env_name, str(args.seed), args.meta_batch_size, args.meta_lr, 
+        "env::%s_seed::%s_learner_type::%s_meta_batch_size::%s_meta_lr::%s_fast_batch_size::%s_" \
+        "fast_lr::%s_prefix::%s_log" % (
+            args.env_name, str(args.seed), args.learner_type, args.meta_batch_size, args.meta_lr, 
             args.fast_batch_size, args.fast_lr, args.prefix)
 
     main(args=args)

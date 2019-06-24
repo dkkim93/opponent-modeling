@@ -49,12 +49,13 @@ def make_env(env_name):
     return _make_env
 
 
-def set_policy(sampler, log, tb_writer, args, name, policy_id):
+def set_policy(sampler, log, tb_writer, args, policy_id):
     if args.policy_type == "discrete":
         raise NotImplementedError("")
 
     elif args.policy_type == "continuous":
         from policy.continuous_policy import ContinuousPolicy
+        name = "continuous_policy"
         policy = ContinuousPolicy(sampler, log, tb_writer, args, name, policy_id)
 
     elif args.policy_type == "normal":
@@ -64,6 +65,22 @@ def set_policy(sampler, log, tb_writer, args, name, policy_id):
         raise ValueError("Invalid option")
 
     return policy
+
+
+def set_learner(policy, sampler, log, tb_writer, args, learner_id):
+    if args.learner_type == "meta":
+        from learner.meta_learner import MetaLearner
+        name = "meta_learner"
+        learner = MetaLearner(policy, sampler, log, tb_writer, args, name, learner_id)
+
+    elif args.learner_type == "finetune":
+        name = "finetune_learner"
+        raise NotImplementedError("")
+
+    else:
+        raise ValueError("Invalid option")
+
+    return learner
 
 
 def normalize(value, min_value, max_value):
