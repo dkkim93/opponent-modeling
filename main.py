@@ -15,6 +15,9 @@ def train(sampler, meta_policy, log, tb_writer, args):
         sampler.reset_task(task_id)
         episodes = sampler.sample()
 
+        # Test adaptation performance
+        meta_policy.meta_test(task_id, episodes)
+
         # Add to memory
         meta_policy.add_episodes(task_id, episodes)
     
