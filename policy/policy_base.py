@@ -56,9 +56,14 @@ class PolicyBase(nn.Module):
         self.optimizer.zero_grad()
         old_params = parameters_to_vector(self.parameters())
         val_losses = 0.
-        for _ in range(self.args.meta_batch_size):
-            # Sample episodes for task i and task (i+1)
-            episodes_i, episodes_i_ = self.memory.sample()
+        for i_meta_batch in range(self.args.meta_batch_size):
+            if i_meta_batch == 0:
+                # As online learning, ensure to include up-to-date task
+                episodes_i = self.memory.storage[task_id - 1]
+                episodes_i_ = self.memory.storage[task_id]
+            else:
+                # Sample episodes for task i and task (i+1)
+                episodes_i, episodes_i_ = self.memory.sample()
         
             # Get adaptation loss based on episode
             adapted_params = self.get_adapted_params(episodes_i)
