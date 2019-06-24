@@ -33,7 +33,7 @@ cd $DIR
 python3.6 main.py \
 --env-name "Regression-v0" \
 --seed 0 \
---learner-type "meta" \
+--learner-type "finetune" \
 --policy-type "continuous" \
 --ep-max-timesteps 500 \
 --n-traj 1 \

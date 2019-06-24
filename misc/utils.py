@@ -74,8 +74,9 @@ def set_learner(policy, sampler, log, tb_writer, args, learner_id):
         learner = MetaLearner(policy, sampler, log, tb_writer, args, name, learner_id)
 
     elif args.learner_type == "finetune":
+        from learner.finetune_learner import FinetuneLearner
         name = "finetune_learner"
-        raise NotImplementedError("")
+        learner = FinetuneLearner(policy, sampler, log, tb_writer, args, name, learner_id)
 
     else:
         raise ValueError("Invalid option")
