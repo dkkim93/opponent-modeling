@@ -45,7 +45,8 @@ class BatchEpisode(object):
     @property
     def rewards(self):
         if self._rewards is None:
-            rewards = np.zeros((len(self), self.batch_size), dtype=np.float32)
+            reward_shape = self._rewards_list[0][0].shape
+            rewards = np.zeros((len(self), self.batch_size) + reward_shape, dtype=np.float32)
             for i in range(self.batch_size):
                 length = len(self._rewards_list[i])
                 rewards[:length, i] = np.stack(self._rewards_list[i], axis=0)

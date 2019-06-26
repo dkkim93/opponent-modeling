@@ -27,6 +27,10 @@ def train(sampler, learner, log, tb_writer, args):
         # Move to next task
         task_id += 1
 
+        if task_id > 60:
+            import sys
+            sys.exit()
+
 
 def main(args):
     # Create dir
@@ -97,6 +101,9 @@ if __name__ == "__main__":
     parser.add_argument(
         "--ep-max-timesteps", default=10, type=int,
         help="Episode is terminated when max timestep is reached.")
+    parser.add_argument(
+        "--n-agent", default=1, type=int, 
+        help="Number of agents in the environment")
 
     # Misc
     parser.add_argument(

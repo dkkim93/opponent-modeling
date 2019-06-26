@@ -40,12 +40,15 @@ def check_github(path, branch_name):
     assert branch.name == branch_name, "Branch name does not equal the desired branch"
 
 
-def make_env(env_name):
+def make_env(env_name, args):
     """Load gym environment: ["Regression-v0"]
     Ref: https://github.com/tristandeleu/pytorch-maml-rl/blob/master/maml_rl/sampler.py
     """
     def _make_env():
-        return gym.make(env_name)
+        if env_name == "Regression-v0":
+            return gym.make(env_name, n_agent=args.n_agent)
+        else:
+            return gym.make(env_name)
     return _make_env
 
 

@@ -28,7 +28,7 @@ class ReplayBuffer(object):
         return (self.storage[task_id], self.storage[task_id + 1])
 
     def exp_distribution(self):
-        exp_lambda = 0.1  # Higher value, steeper slope
+        exp_lambda = 0.25  # Higher value, steeper slope
         tasks = np.arange(len(self.storage) - 1) + 1
         exp_dist = exp_lambda * np.exp(-exp_lambda * tasks)
         exp_dist = np.flip(exp_dist / float(np.sum(exp_dist)))

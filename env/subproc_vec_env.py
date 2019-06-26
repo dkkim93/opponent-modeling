@@ -20,6 +20,7 @@ class EnvWorker(mp.Process):
         self.env.seed(seed)
 
     def empty_step(self):
+        raise ValueError("need to implement n > 1")
         observation = np.zeros(self.env.observation_space.shape, dtype=np.float32)
         reward, done = 0.0, True
         return observation, reward, done, {}
@@ -53,8 +54,7 @@ class EnvWorker(mp.Process):
                 self.remote.close()
                 break
             elif command == 'get_spaces':
-                self.remote.send(
-                    (self.env.observation_space, self.env.action_space))
+                self.remote.send((self.env.observation_space, self.env.action_space))
             else:
                 raise NotImplementedError()
 

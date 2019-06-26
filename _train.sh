@@ -29,11 +29,10 @@ cd $DIR
 # # Comment for using GPU
 # export CUDA_VISIBLE_DEVICES=-1
 
-# Experiment 1
 python3.6 main.py \
 --env-name "Regression-v0" \
 --seed 0 \
---learner-type "finetune" \
+--learner-type "meta" \
 --policy-type "continuous" \
 --ep-max-timesteps 500 \
 --n-traj 1 \
@@ -42,4 +41,5 @@ python3.6 main.py \
 --fast-batch-size 5 \
 --meta-lr 0.003 \
 --fast-lr 5 \
+--n-agent 1 \
 --prefix ""

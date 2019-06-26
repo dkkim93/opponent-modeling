@@ -17,7 +17,7 @@ class BatchSampler(object):
         
         self.queue = mp.Queue()
         self.envs = SubprocVecEnv(
-            envs=[make_env(args.env_name) for _ in range(self.num_workers)], 
+            envs=[make_env(args.env_name, args) for _ in range(self.num_workers)], 
             queue=self.queue, args=args)
 
         # Set seed to envs

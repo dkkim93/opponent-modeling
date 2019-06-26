@@ -26,14 +26,15 @@ class MetaLearner(LearnerBase):
             else:
                 # Sample episodes for task i and task (i+1)
                 episodes_i, episodes_i_ = self.memory.sample()
-        
-            # Get adaptation loss based on episode
-            adapted_params = self.get_adapted_params(episodes_i)
-            val_loss, _ = self.get_mse_loss(episodes_i_, params=adapted_params)
-            val_losses += val_loss
-        
-            # Revert back to the original weight
-            vector_to_parameters(old_params, self.policy.parameters())
+            
+            for i_agent in range(self.args.n_agent):
+                # Get adaptation loss based on episode
+                adapted_params = self.get_adapted_params(episodes_i, i_agent)
+                val_loss, _ = self.get_mse_loss(episodes_i_, params=adapted_params, i_agent=i_agent)
+                val_losses += val_loss
+            
+                # Revert back to the original weight
+                vector_to_parameters(old_params, self.policy.parameters())
         
         val_losses.backward()
         torch.nn.utils.clip_grad_norm_(self.parameters(), 0.5)
@@ -48,20 +49,22 @@ class MetaLearner(LearnerBase):
         if task_id < 1:
             return
 
-        old_params = parameters_to_vector(self.policy.parameters())
-
         # Sample episodes for task i
         episodes_i = self.memory.storage[task_id - 1]
-        
-        # Get adaptation loss based on episode
-        adapted_params = self.get_adapted_params(episodes_i)
-        test_loss, predictions_ = self.get_mse_loss(episodes_i_, params=adapted_params)
+            
+        old_params = parameters_to_vector(self.policy.parameters())
+        predictions_ = []
+        for i_agent in range(self.args.n_agent):
+            # Get adaptation loss based on episode
+            adapted_params = self.get_adapted_params(episodes_i, i_agent)
+            test_loss, prediction_ = self.get_mse_loss(episodes_i_, params=adapted_params, i_agent=i_agent)
+            predictions_.append(prediction_)
+            
+            # Revert back to the original weight
+            vector_to_parameters(old_params, self.policy.parameters())
 
         # Visualize
         self.visualize(episodes_i, episodes_i_, predictions_, task_id)
-        
-        # Revert back to the original weight
-        vector_to_parameters(old_params, self.policy.parameters())
         
         # Log test loss
         test_loss_detached = test_loss.data.cpu().numpy().flatten()[0]
